@@ -10,6 +10,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.zhh.opengltest.databinding.ActivityShapeListBinding;
+import com.zhh.opengltest.shape.CircleRender;
+import com.zhh.opengltest.shape.RectRender;
+import com.zhh.opengltest.shape.RichTriangleRender;
+import com.zhh.opengltest.shape.TriangleRender;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +40,10 @@ public class ShapeListActivity extends AppCompatActivity {
 
     private List<ShapeItem> createListData(){
         List<ShapeItem> list = new ArrayList<>();
-        list.add(new ShapeItem("三角形",TriangleRender.class));
-        list.add(new ShapeItem("等腰三角形",RichTriangleRender.class));
-        list.add(new ShapeItem("正方形",RectRender.class));
-        list.add(new ShapeItem("圆形",CircleRender.class));
+        list.add(new ShapeItem("三角形", TriangleRender.class));
+        list.add(new ShapeItem("等腰三角形", RichTriangleRender.class));
+        list.add(new ShapeItem("正方形", RectRender.class));
+        list.add(new ShapeItem("圆形", CircleRender.class));
         return list;
     }
 

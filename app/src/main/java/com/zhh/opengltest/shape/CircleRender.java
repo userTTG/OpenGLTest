@@ -1,4 +1,4 @@
-package com.zhh.opengltest;
+package com.zhh.opengltest.shape;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -8,6 +8,10 @@ import android.util.Log;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -19,7 +23,7 @@ import javax.microedition.khronos.opengles.GL10;
  * @Date 2022/8/26 11:18
  * @Version 1.0
  */
-public class RichTriangleRender implements GLSurfaceView.Renderer {
+public class CircleRender implements GLSurfaceView.Renderer {
 
     private static final String TAG = "TriangleRender";
 
@@ -40,11 +44,14 @@ public class RichTriangleRender implements GLSurfaceView.Renderer {
                     "gl_FragColor = vColor;" +
                     "}";
 
-    float triagnleCoords[] = {
-            0.5f, 0.5f, 0f,
-            -0.5f, -0.5f, 0f,
-            0.5f, -0.5f, 0f
+    /**
+     * 顶点索引
+     */
+    private short[] indices = {
+            0, 1, 2, 0, 2, 3
     };
+
+    float[] circleCoords;
 
     float color[] = {
             0.0f, 1.0f, 0.0f, 1.0f,
@@ -53,6 +60,8 @@ public class RichTriangleRender implements GLSurfaceView.Renderer {
     };
 
     FloatBuffer vertexBuffer,colorBuffer;
+    //顶点索引缓存
+    private ShortBuffer indicesBuffer;
 
     int mProgram;
     int mMatrixHandle;
@@ -63,16 +72,22 @@ public class RichTriangleRender implements GLSurfaceView.Renderer {
     float[] mViewMatrix = new float[16];
     float[] mMVPMatrix = new float[16];
 
+    public CircleRender() {
+        int n = 60;
+        circleCoords = createCirclePosition(n);
+        color = createCircleColor(n);
+    }
+
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         //将背景设置为灰色
         GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
         //将顶占坐标数组转换为ByteBuffer
-        ByteBuffer bb = ByteBuffer.allocateDirect(triagnleCoords.length * 4);
+        ByteBuffer bb = ByteBuffer.allocateDirect(circleCoords.length * 4);
         bb.order(ByteOrder.nativeOrder());
         vertexBuffer = bb.asFloatBuffer();
-        vertexBuffer.put(triagnleCoords);
+        vertexBuffer.put(circleCoords);
         vertexBuffer.position(0);
 
         ByteBuffer dd = ByteBuffer.allocateDirect(color.length * 4);
@@ -80,6 +95,13 @@ public class RichTriangleRender implements GLSurfaceView.Renderer {
         colorBuffer  = dd.asFloatBuffer();
         colorBuffer.put(color);
         colorBuffer.position(0);
+
+        //顶点索引相关
+        indicesBuffer = ByteBuffer.allocateDirect(indices.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asShortBuffer();
+        indicesBuffer.put(indices);
+        indicesBuffer.position(0);
 
         //加载着色器
         int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
@@ -128,7 +150,7 @@ public class RichTriangleRender implements GLSurfaceView.Renderer {
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
         GLES20.glEnableVertexAttribArray(mPositionHandle);
         //3个顶点，4（点的维数）*3
-        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 4 * 3, vertexBuffer);
+        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexBuffer);
 
         mColorHandle = GLES20.glGetAttribLocation(mProgram, "aColor");
 
@@ -137,8 +159,9 @@ public class RichTriangleRender implements GLSurfaceView.Renderer {
 
 //        GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3);
-//        GLES20.glDisableVertexAttribArray(mColorHandle);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, circleCoords.length/3);
+        GLES20.glDisableVertexAttribArray(mColorHandle);
+//        GLES20.glDrawElements(GL10.GL_TRIANGLES,indices.length,GL10.GL_UNSIGNED_SHORT,indicesBuffer);
         GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
 
@@ -165,5 +188,36 @@ public class RichTriangleRender implements GLSurfaceView.Renderer {
             Log.e(TAG, errorMsg);
             throw new RuntimeException(errorMsg);
         }
+    }
+
+    private float[] createCirclePosition(int n){
+        List<Float> list = new ArrayList<>();
+        float radius = 0.5f;
+        list.add(0f);
+        list.add(0f);
+        list.add(0f);
+        float angleStripe = 360/n;
+        for (float index = 0;index<360+angleStripe;index+=angleStripe){
+            list.add((float)Math.cos(Math.PI*index/180) * radius);
+            list.add((float)Math.sin(Math.PI*index/180) * radius);
+            list.add(0f);
+        }
+        float[] result = new float[list.size()];
+
+        for (int i=0;i<list.size();i++){
+            result[i] = list.get(i);
+        }
+        return result;
+    }
+
+    private float[] createCircleColor(int n){
+        float[] colors = new float[4*(n+2)];
+        for (int i=0;i<n+2;i++){
+            colors[i*4] = 1f;
+            colors[i*4+1] = 0f;
+            colors[i*4+2] = 0f;
+            colors[i*4+3] = 1f;
+        }
+        return colors;
     }
 }

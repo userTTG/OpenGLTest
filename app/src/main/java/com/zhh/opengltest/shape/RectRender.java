@@ -1,4 +1,4 @@
-package com.zhh.opengltest;
+package com.zhh.opengltest.shape;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
