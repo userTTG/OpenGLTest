@@ -8,6 +8,7 @@ import android.util.Log;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -19,7 +20,7 @@ import javax.microedition.khronos.opengles.GL10;
  * @Date 2022/8/26 11:18
  * @Version 1.0
  */
-public class RichTriangleRender implements GLSurfaceView.Renderer {
+public class RectRender implements GLSurfaceView.Renderer {
 
     private static final String TAG = "TriangleRender";
 
@@ -40,10 +41,18 @@ public class RichTriangleRender implements GLSurfaceView.Renderer {
                     "gl_FragColor = vColor;" +
                     "}";
 
-    float triagnleCoords[] = {
-            0.5f, 0.5f, 0f,
+    /**
+     * 顶点索引
+     */
+    private short[] indices = {
+            0, 1, 2, 0, 2, 3
+    };
+
+    float rectCoords[] = {
+            -0.5f, 0.5f, 0f,
             -0.5f, -0.5f, 0f,
-            0.5f, -0.5f, 0f
+            0.5f, -0.5f, 0f,
+            0.5f, 0.5f, 0f,
     };
 
     float color[] = {
@@ -53,6 +62,8 @@ public class RichTriangleRender implements GLSurfaceView.Renderer {
     };
 
     FloatBuffer vertexBuffer,colorBuffer;
+    //顶点索引缓存
+    private ShortBuffer indicesBuffer;
 
     int mProgram;
     int mMatrixHandle;
@@ -69,10 +80,10 @@ public class RichTriangleRender implements GLSurfaceView.Renderer {
         GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
         //将顶占坐标数组转换为ByteBuffer
-        ByteBuffer bb = ByteBuffer.allocateDirect(triagnleCoords.length * 4);
+        ByteBuffer bb = ByteBuffer.allocateDirect(rectCoords.length * 4);
         bb.order(ByteOrder.nativeOrder());
         vertexBuffer = bb.asFloatBuffer();
-        vertexBuffer.put(triagnleCoords);
+        vertexBuffer.put(rectCoords);
         vertexBuffer.position(0);
 
         ByteBuffer dd = ByteBuffer.allocateDirect(color.length * 4);
@@ -80,6 +91,13 @@ public class RichTriangleRender implements GLSurfaceView.Renderer {
         colorBuffer  = dd.asFloatBuffer();
         colorBuffer.put(color);
         colorBuffer.position(0);
+
+        //顶点索引相关
+        indicesBuffer = ByteBuffer.allocateDirect(indices.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asShortBuffer();
+        indicesBuffer.put(indices);
+        indicesBuffer.position(0);
 
         //加载着色器
         int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
@@ -128,7 +146,7 @@ public class RichTriangleRender implements GLSurfaceView.Renderer {
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
         GLES20.glEnableVertexAttribArray(mPositionHandle);
         //3个顶点，4（点的维数）*3
-        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 4 * 3, vertexBuffer);
+        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexBuffer);
 
         mColorHandle = GLES20.glGetAttribLocation(mProgram, "aColor");
 
@@ -137,8 +155,9 @@ public class RichTriangleRender implements GLSurfaceView.Renderer {
 
 //        GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3);
+//        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
 //        GLES20.glDisableVertexAttribArray(mColorHandle);
+        GLES20.glDrawElements(GL10.GL_TRIANGLES,indices.length,GL10.GL_UNSIGNED_SHORT,indicesBuffer);
         GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
 

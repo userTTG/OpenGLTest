@@ -77,8 +77,29 @@ public class TriangleRender implements GLSurfaceView.Renderer {
       GLES20.glViewport(0,0,width,height);
    }
 
+
+//   public static void glVertexAttribPointer(
+//           int indx,//顶点属性的索引,即glGetAttribLocation获取的句柄
+//           int size,//维数，一个点或颜色的维数。必须是1、2、3、4
+//           int type,//属性的元素类型
+//           boolean normalized,//转换的时候是否要经过规范化，true：是；false：直接转化
+//           int stride,//跨距，默认是0。（若将顶点位置和颜色数据存放在一个数组内，则需要设置）
+//           java.nio.Buffer ptr//数据
+//   )
+
+//   public static native void glDrawArrays(
+//           int mode,//需要渲染的图元类型，包括 GL_POINTS, GL_LINE_STRIP, GL_LINE_LOOP, GL_LINES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN ，GL_TRIANGLES。
+//           int first,//从数组缓存中的哪一位开始绘制，一般为0.
+//           int count//数组中顶点的数量.
+//   );
+//   https://blog.csdn.net/frank06504/article/details/117523329
+
    @Override
    public void onDrawFrame(GL10 gl) {
+
+
+
+
       //清除颜色缓冲和深度缓冲
       GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
       //使用opengl程序
