@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.zhh.opengltest.databinding.ActivityShapeListBinding;
+import com.zhh.opengltest.gl2d.Texture2dMultiRender;
 import com.zhh.opengltest.gl2d.Texture2dRender;
 import com.zhh.opengltest.shape.CircleRender;
 import com.zhh.opengltest.shape.CubeRender;
@@ -48,6 +49,7 @@ public class ShapeListActivity extends AppCompatActivity {
         list.add(new ShapeItem("圆形", CircleRender.class));
         list.add(new ShapeItem("立方体", CubeRender.class));
         list.add(new ShapeItem("图片", Texture2dRender.class));
+        list.add(new ShapeItem("多图片", Texture2dMultiRender.class));
         return list;
     }
 
