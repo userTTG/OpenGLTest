@@ -51,10 +51,10 @@ public class Texture2dMultiRender implements GLSurfaceView.Renderer {
 
     private float[] VERTEX_TEX_2 = {
             0.5f,0.5f,
-            0.75f,0.25f,
-            0.25f,0.25f,
-            0.25f,0.75f,
-            0.75f,0.75f,
+            1.5f,-0.5f,
+            -0.5f,-0.5f,
+            -0.5f,1.5f,
+            1.5f,1.5f
     };
 
     /**
@@ -142,11 +142,27 @@ public class Texture2dMultiRender implements GLSurfaceView.Renderer {
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
 
-        //透视投影方式
-        float ratio = (float)width/height;
-        Matrix.frustumM(mProjectMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
-        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 7, 0, 0, 0, 0, 1, 0);
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectMatrix, 0, mViewMatrix, 0);
+        int w=mBitmap.getWidth();
+        int h=mBitmap.getHeight();
+        float sWH=w/(float)h;
+        float sWidthHeight=width/(float)height;
+        if(width>height){
+            if(sWH>sWidthHeight){
+                Matrix.orthoM(mProjectMatrix, 0, -sWidthHeight*sWH,sWidthHeight*sWH, -1,1, 3, 7);
+            }else{
+                Matrix.orthoM(mProjectMatrix, 0, -sWidthHeight/sWH,sWidthHeight/sWH, -1,1, 3, 7);
+            }
+        }else{
+            if(sWH>sWidthHeight){
+                Matrix.orthoM(mProjectMatrix, 0, -1, 1, -1/sWidthHeight*sWH, 1/sWidthHeight*sWH,3, 7);
+            }else{
+                Matrix.orthoM(mProjectMatrix, 0, -1, 1, -sWH/sWidthHeight, sWH/sWidthHeight,3, 7);
+            }
+        }
+        //设置相机位置
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 7.0f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        //计算变换矩阵
+        Matrix.multiplyMM(mMVPMatrix,0,mProjectMatrix,0,mViewMatrix,0);
     }
 
     @Override
@@ -171,7 +187,7 @@ public class Texture2dMultiRender implements GLSurfaceView.Renderer {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,textureId[0]);
         int textureUnitPosition = GLES20.glGetUniformLocation(mProgram, "uTextureUnit");
-        GLES20.glUniform1f(textureUnitPosition,0);
+        GLES20.glUniform1i(textureUnitPosition,0);
 
 
         int texHandle2 = GLES20.glGetAttribLocation(mProgram, "aTextureCoord2");
@@ -181,7 +197,7 @@ public class Texture2dMultiRender implements GLSurfaceView.Renderer {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,textureId[1]);
         int textureUnitPosition2 = GLES20.glGetUniformLocation(mProgram, "uTextureUnit2");
-        GLES20.glUniform1f(textureUnitPosition2,1);
+        GLES20.glUniform1i(textureUnitPosition2,1);
 
         GLES20.glDrawElements(GLES20.GL_TRIANGLES,VERTEX_POINT.length,GLES20.GL_UNSIGNED_SHORT,indicesBuffer);
 
@@ -204,9 +220,9 @@ public class Texture2dMultiRender implements GLSurfaceView.Renderer {
             //设置放大过滤为使用纹理中坐标最接近的若干个颜色，通过加权平均算法得到需要绘制的像素颜色
             GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,GLES20.GL_TEXTURE_MAG_FILTER,GLES20.GL_LINEAR);
             //设置环绕方向S，截取纹理坐标到[1/2n,1-1/2n]。将导致永远不会与border融合
-            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,GLES20.GL_CLAMP_TO_EDGE);
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,GLES20.GL_REPEAT);
             //设置环绕方向T，截取纹理坐标到[1/2n,1-1/2n]。将导致永远不会与border融合
-            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,GLES20.GL_CLAMP_TO_EDGE);
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,GLES20.GL_REPEAT);
 
 //            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
 //            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
