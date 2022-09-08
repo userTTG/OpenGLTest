@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.zhh.opengltest.databinding.ActivityShapeListBinding;
+import com.zhh.opengltest.gl2d.Texture2dCubeMultiRender;
 import com.zhh.opengltest.gl2d.Texture2dCubeOneRender;
 import com.zhh.opengltest.gl2d.Texture2dMultiImageRender;
 import com.zhh.opengltest.gl2d.Texture2dMultiRender;
@@ -54,6 +55,7 @@ public class ShapeListActivity extends AppCompatActivity {
         list.add(new ShapeItem("单纹理多图片", Texture2dMultiImageRender.class));
         list.add(new ShapeItem("多纹理", Texture2dMultiRender.class));
         list.add(new ShapeItem("单纹理立方体", Texture2dCubeOneRender.class));
+        list.add(new ShapeItem("多纹理立方体", Texture2dCubeMultiRender.class));
         return list;
     }
 
