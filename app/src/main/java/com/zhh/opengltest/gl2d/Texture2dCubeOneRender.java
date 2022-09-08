@@ -16,8 +16,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -33,41 +31,60 @@ public class Texture2dCubeOneRender implements GLSurfaceView.Renderer {
 
     private static final String TAG = "Texture2dRender";
 
-    float[] VERTEX_POINT = {
+    float[] VERTEX_POINT_FRONT = {
             -0.5f, 0.5f, 0.5f,//前左上0
             -0.5f, -0.5f, 0.5f,//前左下1
             0.5f, -0.5f, 0.5f,//前右下2
             0.5f, 0.5f, 0.5f,//前右上3
+    };
+
+    float[] VERTEX_POINT_BACK = {
             -0.5f, 0.5f, -0.5f,//后左上4
             -0.5f, -0.5f, -0.5f,//后左下5
             0.5f, -0.5f, -0.5f,//后右下6
             0.5f, 0.5f, -0.5f,//后右上7
     };
 
-    /**
-     * 顶点索引
-     */
-    private short[] indices = {
-            0,1,2,0,2,3,//前面
-            4,5,1,4,1,0,//左面
-            4,0,3,4,3,7,//上面
-            3,2,6,3,6,7,//右面
-            5,1,2,5,2,6,//下面
-            4,5,6,4,6,7,//后面
+    float[] VERTEX_POINT_LEFT = {
+            -0.5f, 0.5f, 0.5f,//前左上0
+            -0.5f, -0.5f, 0.5f,//前左下1
+            -0.5f, -0.5f, -0.5f,//后左下5
+            -0.5f, 0.5f, -0.5f,//后左上4
+    };
+
+    float[] VERTEX_POINT_RIGHT = {
+            0.5f, 0.5f, 0.5f,//前右上3
+            0.5f, -0.5f, 0.5f,//前右下2
+            0.5f, -0.5f, -0.5f,//后右下6
+            0.5f, 0.5f, -0.5f,//后右上7
+    };
+
+    float[] VERTEX_POINT_TOP = {
+            -0.5f, 0.5f, -0.5f,//后左上4
+            -0.5f, 0.5f, 0.5f,//前左上0
+            0.5f, 0.5f, 0.5f,//前右上3
+            0.5f, 0.5f, -0.5f,//后右上7
+    };
+
+    float[] VERTEX_POINT_BOTTOM = {
+            -0.5f, -0.5f, -0.5f,//后左下5
+            -0.5f, -0.5f, 0.5f,//前左下1
+            0.5f, -0.5f, 0.5f,//前右下2
+            0.5f, -0.5f, -0.5f,//后右下6
     };
 
     private float[] VERTEX_TEX = {
             0,0,
             0,1f,
             1,1,
-            1,0
+            1,0,
     };
 
-    FloatBuffer vertexPointerBuffer,vertexPointerBuffer2,vertexTexBuffer,vertexTexBuffer2;
+    FloatBuffer vertexPointerBufferFront,vertexPointerBufferBack,vertexPointerBufferLeft,vertexPointerBufferRight,vertexPointerBufferTop,vertexPointerBufferBottom,vertexTexBuffer;
     //顶点索引缓存
     private ShortBuffer indicesBuffer;
 
-    int[] textureId = new int[2];
+    int[] textureId = new int[3];
 
     int mProgram;
     int mMatrixHandle;
@@ -86,24 +103,50 @@ public class Texture2dCubeOneRender implements GLSurfaceView.Renderer {
         GLES20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
         //将顶占坐标数组转换为ByteBuffer
-        ByteBuffer bb = ByteBuffer.allocateDirect(VERTEX_POINT.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        vertexPointerBuffer = bb.asFloatBuffer();
-        vertexPointerBuffer.put(VERTEX_POINT);
-        vertexPointerBuffer.position(0);
+        ByteBuffer f = ByteBuffer.allocateDirect(VERTEX_POINT_FRONT.length * 4);
+        f.order(ByteOrder.nativeOrder());
+        vertexPointerBufferFront = f.asFloatBuffer();
+        vertexPointerBufferFront.put(VERTEX_POINT_FRONT);
+        vertexPointerBufferFront.position(0);
+
+        ByteBuffer back = ByteBuffer.allocateDirect(VERTEX_POINT_BACK.length * 4);
+        back.order(ByteOrder.nativeOrder());
+        vertexPointerBufferBack = back.asFloatBuffer();
+        vertexPointerBufferBack.put(VERTEX_POINT_BACK);
+        vertexPointerBufferBack.position(0);
+
+        ByteBuffer left = ByteBuffer.allocateDirect(VERTEX_POINT_LEFT.length * 4);
+        left.order(ByteOrder.nativeOrder());
+        vertexPointerBufferLeft = left.asFloatBuffer();
+        vertexPointerBufferLeft.put(VERTEX_POINT_LEFT);
+        vertexPointerBufferLeft.position(0);
+
+        ByteBuffer right = ByteBuffer.allocateDirect(VERTEX_POINT_RIGHT.length * 4);
+        right.order(ByteOrder.nativeOrder());
+        vertexPointerBufferRight = right.asFloatBuffer();
+        vertexPointerBufferRight.put(VERTEX_POINT_RIGHT);
+        vertexPointerBufferRight.position(0);
+
+        ByteBuffer top = ByteBuffer.allocateDirect(VERTEX_POINT_TOP.length * 4);
+        top.order(ByteOrder.nativeOrder());
+        vertexPointerBufferTop = top.asFloatBuffer();
+        vertexPointerBufferTop.put(VERTEX_POINT_TOP);
+        vertexPointerBufferTop.position(0);
+
+        ByteBuffer bottom = ByteBuffer.allocateDirect(VERTEX_POINT_BOTTOM.length * 4);
+        bottom.order(ByteOrder.nativeOrder());
+        vertexPointerBufferBottom = bottom.asFloatBuffer();
+        vertexPointerBufferBottom.put(VERTEX_POINT_BOTTOM);
+        vertexPointerBufferBottom.position(0);
+
+
+
 
         ByteBuffer dd = ByteBuffer.allocateDirect(VERTEX_TEX.length * 4);
         dd.order(ByteOrder.nativeOrder());
         vertexTexBuffer  = dd.asFloatBuffer();
         vertexTexBuffer.put(VERTEX_TEX);
         vertexTexBuffer.position(0);
-
-        //顶点索引相关
-        indicesBuffer = ByteBuffer.allocateDirect(indices.length * 4)
-                .order(ByteOrder.nativeOrder())
-                .asShortBuffer();
-        indicesBuffer.put(indices);
-        indicesBuffer.position(0);
 
         //加载着色器
         int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, ResReadUtils.readResource(R.raw.vertex_texture_2d_shade));
@@ -124,6 +167,9 @@ public class Texture2dCubeOneRender implements GLSurfaceView.Renderer {
 
         Bitmap t2 = BitmapFactory.decodeResource(Utils.getApp().getResources(),R.drawable.img_texture_2d_2,options);
         textureId[1] = createTexture2D(t2);
+
+        Bitmap t3 = BitmapFactory.decodeResource(Utils.getApp().getResources(),R.drawable.squirtle,options);
+        textureId[2] = createTexture2D(t3);
 
     }
 
@@ -158,11 +204,46 @@ public class Texture2dCubeOneRender implements GLSurfaceView.Renderer {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 
         //3个顶点，4（点的维数）*3
-        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexPointerBuffer);
+        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexPointerBufferFront);
         GLES20.glEnableVertexAttribArray(mPositionTexHandle);
         GLES20.glVertexAttribPointer(mPositionTexHandle,2,GLES20.GL_FLOAT,false,0,vertexTexBuffer);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,textureId[0]);
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES,VERTEX_POINT.length,GLES20.GL_UNSIGNED_SHORT,indicesBuffer);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN,0,VERTEX_POINT_FRONT.length/3);
+
+        //3个顶点，4（点的维数）*3
+        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexPointerBufferBack);
+        GLES20.glEnableVertexAttribArray(mPositionTexHandle);
+        GLES20.glVertexAttribPointer(mPositionTexHandle,2,GLES20.GL_FLOAT,false,0,vertexTexBuffer);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,textureId[0]);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN,0,VERTEX_POINT_BACK.length/3);
+
+        //3个顶点，4（点的维数）*3
+        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexPointerBufferTop);
+        GLES20.glEnableVertexAttribArray(mPositionTexHandle);
+        GLES20.glVertexAttribPointer(mPositionTexHandle,2,GLES20.GL_FLOAT,false,0,vertexTexBuffer);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,textureId[1]);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN,0,VERTEX_POINT_TOP.length/3);
+
+        //3个顶点，4（点的维数）*3
+        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexPointerBufferBottom);
+        GLES20.glEnableVertexAttribArray(mPositionTexHandle);
+        GLES20.glVertexAttribPointer(mPositionTexHandle,2,GLES20.GL_FLOAT,false,0,vertexTexBuffer);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,textureId[1]);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN,0,VERTEX_POINT_BOTTOM.length/3);
+
+        //3个顶点，4（点的维数）*3
+        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexPointerBufferLeft);
+        GLES20.glEnableVertexAttribArray(mPositionTexHandle);
+        GLES20.glVertexAttribPointer(mPositionTexHandle,2,GLES20.GL_FLOAT,false,0,vertexTexBuffer);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,textureId[2]);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN,0,VERTEX_POINT_LEFT.length/3);
+
+        //3个顶点，4（点的维数）*3
+        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexPointerBufferRight);
+        GLES20.glEnableVertexAttribArray(mPositionTexHandle);
+        GLES20.glVertexAttribPointer(mPositionTexHandle,2,GLES20.GL_FLOAT,false,0,vertexTexBuffer);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,textureId[2]);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN,0,VERTEX_POINT_RIGHT.length/3);
 
 
 //        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexPointerBuffer2);
